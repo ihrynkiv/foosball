@@ -150,8 +150,6 @@ td.name,th.name{text-align:left;font-weight:800}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line)}
 .opt:first-of-type{border-top:0}
 
-#reset{position:absolute;top:10px;right:12px;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.35);color:var(--h-ink);font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;cursor:pointer}
-#reset:hover{background:rgba(255,255,255,.65)}
 #share{position:fixed;right:14px;bottom:14px;z-index:10;border:0;padding:10px 16px;border-radius:99px;font-weight:800;font-size:14px;background:var(--accent);color:var(--accent-ink);cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 30px}
 
@@ -173,7 +171,6 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 30px}
 </head>
 <body>
 <header>
-  <button id="reset" onclick="resetAll()" title="Reset the whole championship">↺ Reset</button>
   <div class="logo"><span class="ball">⚽</span> Verity Foosball</div>
   <div class="sub">Office table football · 7 players · 21 matches · 2 vs 2</div>
   <div class="progress"><i id="bar" style="width:0"></i></div>
