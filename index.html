@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verity Foosball</title>
+<meta name="description" content="Verity office table football championship: 7 players, 21 matches, 2 vs 2.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚽%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --grass:#1f7a3d; --grass-d:#145a2b; --line:#e9f5ec; --wood:#6b4423; --wood-d:#3f2713;
+  --bg:#f3efe6; --card:#fffdf8; --ink:#241a10; --muted:#7a6a58; --gold:#f2b705; --red:#d64545; --blue:#2f6fd6;
+  --shadow:0 3px 0 rgba(0,0,0,.18), 0 8px 18px rgba(0,0,0,.12);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1b1510;--card:#2a2118;--ink:#f6ecdc;--muted:#b3a48f;--shadow:0 3px 0 rgba(0,0,0,.5),0 8px 18px rgba(0,0,0,.4);}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{font-family:"Trebuchet MS",Impact,system-ui,sans-serif;margin:0}
+header{
+  background:
+    repeating-linear-gradient(90deg,var(--grass) 0 60px,var(--grass-d) 60px 120px);
+  color:#fff;text-align:center;padding:28px 16px 22px;position:relative;border-bottom:8px solid var(--wood);
+  box-shadow:0 4px 0 var(--wood-d);
+}
+header::before,header::after{content:"";position:absolute;top:0;bottom:0;width:3px;background:var(--line);opacity:.55}
+header::before{left:16px} header::after{right:16px}
+.logo{font-size:clamp(34px,8vw,64px);font-weight:900;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 4px 0 rgba(0,0,0,.35)}
+.logo .ball{display:inline-block;animation:roll 4s linear infinite}
+@keyframes roll{to{transform:rotate(360deg)}}
+.sub{opacity:.92;margin-top:4px;font-weight:600}
+.progress{max-width:420px;margin:14px auto 0;background:rgba(0,0,0,.35);border-radius:99px;height:16px;overflow:hidden;border:2px solid rgba(255,255,255,.6)}
+.progress i{display:block;height:100%;background:var(--gold);transition:width .4s}
+.ptext{font-size:13px;margin-top:6px;font-weight:600}
+nav{display:flex;justify-content:center;gap:8px;padding:14px 12px 4px;position:sticky;top:0;background:var(--bg);z-index:5;flex-wrap:wrap}
+nav button{
+  font:inherit;font-weight:800;padding:9px 16px;border-radius:10px;border:2px solid var(--wood);
+  background:var(--card);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--wood-d)
+}
+nav button.on{background:var(--wood);color:#fff}
+main{max-width:860px;margin:0 auto;padding:12px 14px 60px}
+section{display:none} section.on{display:block}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:14px;margin:12px 0}
+.alert{border:2px dashed var(--gold);background:rgba(242,183,5,.12);border-radius:12px;padding:10px 14px;margin:12px 0;font-weight:600}
+/* leaderboard */
+.podium{display:flex;gap:10px;align-items:flex-end;justify-content:center;margin:10px 0 4px}
+.pod{flex:1;max-width:180px;text-align:center;border-radius:12px 12px 0 0;padding:10px 6px;color:#fff;font-weight:800;box-shadow:var(--shadow)}
+.pod .nm{font-size:18px}.pod .pt{font-size:13px;opacity:.95}
+.pod.p1{background:linear-gradient(#f7c948,#c89400);height:130px}
+.pod.p2{background:linear-gradient(#b9c2cc,#7f8b99);height:104px}
+.pod.p3{background:linear-gradient(#cf8c52,#8f5424);height:84px}
+.medal{font-size:28px;display:block}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid rgba(128,110,90,.25)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+td.name,th.name{text-align:left;font-weight:800}
+td.pts{font-size:20px;font-weight:900;color:var(--grass)}
+.pos{width:34px;font-weight:900}
+.tie{display:inline-block;background:var(--gold);color:#3b2a00;border-radius:6px;font-size:11px;font-weight:800;padding:1px 6px;margin-left:6px}
+.tb button{font:inherit;font-weight:800;border:1px solid var(--wood);background:transparent;color:var(--ink);border-radius:6px;width:26px;cursor:pointer}
+.scroll{overflow-x:auto}
+/* matches */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.filters select,.filters button{font:inherit;padding:7px 10px;border-radius:8px;border:2px solid var(--wood);background:var(--card);color:var(--ink)}
+.match{border-left:8px solid var(--muted)}
+.match.next{border-left-color:var(--gold);outline:3px solid var(--gold)}
+.match.done{border-left-color:var(--grass)}
+.mhead{display:flex;justify-content:space-between;font-weight:800;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.badge{background:var(--gold);color:#3b2a00;border-radius:6px;padding:0 8px}
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:10px 0}
+.team{border-radius:12px;padding:10px;text-align:center;font-weight:800;border:3px solid transparent;color:#fff}
+.team.a{background:var(--red)} .team.b{background:var(--blue)}
+.team.win{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,183,5,.5)}
+.team.lose{opacity:.55}
+.team small{display:block;font-weight:600;opacity:.9}
+.vs{font-weight:900;color:var(--muted)}
+.ctrl{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.ctrl .cell{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
+.ctrl input{width:64px;font:inherit;font-size:20px;font-weight:800;text-align:center;padding:6px;border-radius:8px;border:2px solid var(--wood);background:var(--card);color:var(--ink)}
+.btn{font:inherit;font-weight:800;border-radius:8px;border:2px solid var(--wood);background:var(--card);color:var(--ink);padding:6px 10px;cursor:pointer}
+.btn.win{background:var(--grass);color:#fff;border-color:var(--grass-d)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.rest{margin-top:10px;font-size:13px;color:var(--muted)}
+.err{color:var(--red);font-weight:700;font-size:13px;margin-top:6px}
+.me{font-weight:900;color:var(--grass)}
+/* rules */
+.rules h3{margin:14px 0 6px}
+.rules li{margin:4px 0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:20px}
+@media(max-width:560px){
+  .teams,.ctrl{grid-template-columns:1fr}
+  .vs{text-align:center}
+  .hide-s{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="ball">⚽</span> Verity Foosball <span class="ball">⚽</span></div>
+  <div class="sub">Office Table Football Championship · 7 players · 21 matches · 2 vs 2</div>
+  <div class="progress"><i id="bar" style="width:0"></i></div>
+  <div class="ptext" id="ptext"></div>
+</header>
+<nav>
+  <button data-tab="table" class="on">🏆 Table</button>
+  <button data-tab="matches">📋 Matches</button>
+  <button data-tab="rules">📖 Rules</button>
+</nav>
+<main>
+  <section id="table" class="on"></section>
+  <section id="matches"></section>
+  <section id="rules" class="rules"></section>
+</main>
+<footer>Kick off, have fun, play fair. ⚽ Results save in this browser.</footer>
+
+<script>
+const PLAYERS = ["Ivan","Yulia","Tania","Oleksii","Vova","Viktor","Halyna"];
+// Each match: [teamA, teamB] with player indexes. Built so that:
+// every pair is teammates exactly 2 times, every pair are opponents exactly 4 times,
+// each player plays 12 matches, nobody plays 3 in a row, nobody rests more than 3 matches.
+const SCHEDULE = [[[0,3],[4,5]],[[0,5],[2,6]],[[1,4],[2,3]],[[0,4],[3,6]],[[1,6],[2,5]],[[0,2],[3,5]],[[1,3],[4,6]],[[0,6],[2,4]],[[1,5],[2,3]],[[0,1],[4,5]],[[2,6],[3,4]],[[0,1],[3,6]],[[0,5],[1,4]],[[2,4],[5,6]],[[0,3],[1,2]],[[1,5],[4,6]],[[0,6],[3,5]],[[0,4],[1,2]],[[1,3],[5,6]],[[2,5],[3,4]],[[0,2],[1,6]]];
+const KEY = "verity-foosball-v1";
+const WIN_SCORE = 10;
+
+let state = load();
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.results) return s; }catch(e){}
+  return {results:{}, tb:{}};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+const $ = s => document.querySelector(s);
+const names = ids => ids.map(i => PLAYERS[i]).join(" & ");
+const resting = m => PLAYERS.map((_,i)=>i).filter(i => !m[0].includes(i) && !m[1].includes(i));
+
+function winnerOf(r){ return r && (r.w === "A" || r.w === "B") ? r.w : null; }
+function nextIndex(){ return SCHEDULE.findIndex((_,i)=>!winnerOf(state.results[i])); }
+
+function stats(){
+  const s = PLAYERS.map((n,i)=>({i,n,pts:0,played:0,wins:0,losses:0,gf:0,ga:0,scored:0}));
+  SCHEDULE.forEach((m,idx)=>{
+    const r = state.results[idx], w = winnerOf(r);
+    if(!w) return;
+    const hasScore = Number.isInteger(r.a) && Number.isInteger(r.b);
+    [["A",0,1],["B",1,0]].forEach(([side,me,other])=>{
+      m[me].forEach(p=>{
+        const x = s[p]; x.played++;
+        if(w===side){x.wins++;x.pts++;} else x.losses++;
+        if(hasScore){ x.scored++; x.gf += me===0?r.a:r.b; x.ga += me===0?r.b:r.a; }
+      });
+    });
+  });
+  s.forEach(x=>{x.gd=x.gf-x.ga; x.tb=state.tb[x.i]||0;});
+  s.sort((a,b)=> b.pts-a.pts || b.gd-a.gd || b.gf-a.gf || b.tb-a.tb || a.i-b.i);
+  // position + tie detection (equal on pts, gd, gf, tb)
+  s.forEach((x,k)=>{
+    const prev = s[k-1];
+    x.same = prev && prev.pts===x.pts && prev.gd===x.gd && prev.gf===x.gf && prev.tb===x.tb;
+    x.pos = x.same ? prev.pos : k+1;
+  });
+  s.forEach(x=>{ x.tied = s.some(y=>y!==x && y.pos===x.pos); });
+  return s;
+}
+
+function renderHead(){
+  const done = SCHEDULE.filter((_,i)=>winnerOf(state.results[i])).length;
+  $("#bar").style.width = (done/SCHEDULE.length*100)+"%";
+  $("#ptext").textContent = done+" of "+SCHEDULE.length+" matches played";
+}
+
+function renderTable(){
+  const s = stats();
+  const done = SCHEDULE.every((_,i)=>winnerOf(state.results[i]));
+  const started = SCHEDULE.some((_,i)=>winnerOf(state.results[i]));
+  const med = ["🥇","🥈","🥉"];
+  let h = "";
+  if(started){
+    const pod = [s[1],s[0],s[2]];
+    h += '<div class="podium">'+pod.map((x,k)=>{
+      const c = ["p2","p1","p3"][k], m = med[[1,0,2][k]];
+      return '<div class="pod '+c+'"><span class="medal">'+m+'</span><div class="nm">'+x.n+'</div><div class="pt">'+x.pts+' pts</div></div>';
+    }).join("")+'</div>';
+  }
+  const tiedTop = s.filter(x=>x.pos<=3 && x.tied);
+  if(done && tiedTop.length){
+    const groups = {};
+    tiedTop.forEach(x=>(groups[x.pos]=groups[x.pos]||[]).push(x.n));
+    h += '<div class="alert">🥅 Still a tie after all tie-break rules! Players level for place '+
+      Object.entries(groups).map(([p,n])=>p+": "+n.join(", ")).join(" · ")+
+      '. Play the Golden Goal (see Rules). Then use the + button to add a Golden Goal win.</div>';
+  } else if(done){
+    h += '<div class="alert">🎉 The championship is over. Congratulations, <b>'+s[0].n+'</b>!</div>';
+  }
+  h += '<div class="card scroll"><table><thead><tr><th>#</th><th class="name">Player</th><th>Pts</th><th>P</th><th>W</th><th class="hide-s">L</th><th class="hide-s">GF</th><th class="hide-s">GA</th><th>GD</th><th>🥅</th></tr></thead><tbody>';
+  s.forEach(x=>{
+    h += '<tr><td class="pos">'+(x.pos<=3&&started?med[x.pos-1]:x.pos)+'</td><td class="name">'+x.n+(x.tied&&started?'<span class="tie">TIE</span>':'')+
+      '</td><td class="pts">'+x.pts+'</td><td>'+x.played+'</td><td>'+x.wins+'</td><td class="hide-s">'+x.losses+'</td><td class="hide-s">'+x.gf+
+      '</td><td class="hide-s">'+x.ga+'</td><td>'+(x.gd>0?"+":"")+x.gd+'</td><td class="tb">'+
+      (x.tied && started ? '<button data-tb="'+x.i+'" data-d="-1">−</button> '+x.tb+' <button data-tb="'+x.i+'" data-d="1">+</button>' : (x.tb||"")) +'</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  h += '<p style="color:var(--muted);font-size:13px">Order: points → goal difference (GD) → goals scored (GF) → Golden Goal wins (🥅). Goals count only for matches with a score.</p>';
+  $("#table").innerHTML = h;
+}
+
+let filter = {player:"all", status:"all"};
+function renderMatches(){
+  const nx = nextIndex();
+  let h = '<div class="filters"><label>Player <select id="fp"><option value="all">Everyone</option>'+
+    PLAYERS.map((n,i)=>'<option value="'+i+'"'+(filter.player==String(i)?" selected":"")+'>'+n+'</option>').join("")+'</select></label>'+
+    '<label>Show <select id="fs">'+[["all","All"],["todo","To play"],["done","Played"]].map(([v,l])=>'<option value="'+v+'"'+(filter.status===v?" selected":"")+'>'+l+'</option>').join("")+'</select></label></div>';
+  SCHEDULE.forEach((m,idx)=>{
+    const r = state.results[idx]||{}, w = winnerOf(r);
+    if(filter.player!=="all"){ const p=+filter.player; if(!m[0].includes(p) && !m[1].includes(p)) return; }
+    if(filter.status==="todo" && w) return;
+    if(filter.status==="done" && !w) return;
+    const me = filter.player==="all"?null:+filter.player;
+    const label = (ids)=>ids.map(i=>i===me?'<span class="me" style="color:#ffe27a">'+PLAYERS[i]+'</span>':PLAYERS[i]).join(" & ");
+    const cls = (idx===nx?" next":"")+(w?" done":"");
+    h += '<div class="card match'+cls+'" data-m="'+idx+'">'+
+      '<div class="mhead"><span>Match '+(idx+1)+'</span>'+(idx===nx?'<span class="badge">▶ NEXT UP</span>':(w?'<span>✔ played</span>':''))+'</div>'+
+      '<div class="teams"><div class="team a'+(w==="A"?" win":w==="B"?" lose":"")+'">🔴 '+label(m[0])+(w==="A"?'<small>🏆 +1 point each</small>':'')+'</div><div class="vs">VS</div>'+
+      '<div class="team b'+(w==="B"?" win":w==="A"?" lose":"")+'">🔵 '+label(m[1])+(w==="B"?'<small>🏆 +1 point each</small>':'')+'</div></div>'+
+      '<div class="ctrl"><div class="cell"><input type="number" inputmode="numeric" min="0" max="99" placeholder="–" data-s="a" value="'+(Number.isInteger(r.a)?r.a:"")+'"><button class="btn'+(w==="A"?" win":"")+'" data-w="A">Red wins</button></div>'+
+      '<div class="vs">:</div>'+
+      '<div class="cell"><input type="number" inputmode="numeric" min="0" max="99" placeholder="–" data-s="b" value="'+(Number.isInteger(r.b)?r.b:"")+'"><button class="btn'+(w==="B"?" win":"")+'" data-w="B">Blue wins</button></div></div>'+
+      (r.err?'<div class="err">'+r.err+'</div>':'')+
+      '<div class="rest">😴 Resting: '+names(resting(m))+(w||r.a!=null||r.b!=null?' · <button class="btn danger" data-clear="1">Clear</button>':'')+'</div></div>';
+  });
+  $("#matches").innerHTML = h;
+}
+
+function renderRules(){
+  $("#rules").innerHTML = `
+  <div class="card"><h2>🎯 How it works</h2><ul>
+    <li>7 players. Every match is 2 vs 2. Three players rest in each match.</li>
+    <li>There are no fixed teams. Everyone plays with everyone and against everyone.</li>
+    <li>The 21 matches are fair. Each player plays <b>12</b> matches and rests 9.</li>
+    <li>Each player is a teammate of every other player <b>2 times</b>.</li>
+    <li>Each player is an opponent of every other player <b>4 times</b>.</li>
+    <li>Nobody plays 3 matches in a row. Nobody rests more than 3 matches in a row.</li>
+    <li>The winning team gets <b>1 point for each member</b>. The maximum is 12 points.</li>
+  </ul></div>
+  <div class="card"><h2>⚽ Match rules</h2><ul>
+    <li>The first team to score <b>${WIN_SCORE} goals</b> wins the match.</li>
+    <li>Enter the final score, for example 10:6. The site finds the winner by itself.</li>
+    <li>If you do not know the score, press "Red wins" or "Blue wins". That match gives points but no goal stats.</li>
+    <li>Red team and Blue team swap sides at 5 goals. The first match of the day needs a coin toss for sides.</li>
+    <li>No spinning the rods. Keep it fun.</li>
+  </ul></div>
+  <div class="card"><h2>🥇 Tie-breaks</h2>
+    <p>Two players can have the same points at the end. The site uses these rules in this order:</p>
+    <ol>
+      <li><b>Points</b> (wins).</li>
+      <li><b>Goal difference (GD)</b>: all goals the player scored minus all goals the player conceded.</li>
+      <li><b>Goals scored (GF)</b>.</li>
+      <li><b>Golden Goal round</b>, if players are still level.</li>
+    </ol>
+    <h3>Golden Goal round</h3>
+    <ul>
+      <li>Only players that are level for a podium place play.</li>
+      <li><b>2 players:</b> a 1 vs 1 match. The first goal wins.</li>
+      <li><b>3 players:</b> a 1 vs 1 knockout. A coin toss gives one player a bye.</li>
+      <li><b>4 players:</b> a 2 vs 2 match. The best-ranked and the worst-ranked player (1 &amp; 4) play against the 2 &amp; 3 pair.</li>
+      <li>Add a Golden Goal win with the + button in the Table tab.</li>
+    </ul>
+    <p>Tip: If only the score of some matches is known, GD is not fully fair. In that case, play the Golden Goal round.</p>
+  </div>
+  <div class="card"><h2>💾 Data</h2>
+    <p>The site saves results in this browser only. Use one computer for the tournament. Use Export to save a backup.</p>
+    <div class="tools">
+      <button class="btn" id="exp">Export results</button>
+      <button class="btn" id="imp">Import results</button>
+      <button class="btn danger" id="rst">Reset everything</button>
+      <input type="file" id="file" accept="application/json" hidden>
+    </div>
+  </div>`;
+  $("#exp").onclick = ()=>{
+    const b = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "verity-foosball.json"; a.click();
+  };
+  $("#imp").onclick = ()=>$("#file").click();
+  $("#file").onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    f.text().then(t=>{ try{ const s=JSON.parse(t); if(!s.results) throw 0; state={results:s.results,tb:s.tb||{}}; save(); renderAll(); alert("Imported."); }catch(x){ alert("This file is not valid."); } });
+  };
+  $("#rst").onclick = ()=>{ if(confirm("Delete all results?")){ state={results:{},tb:{}}; save(); renderAll(); } };
+}
+
+function renderAll(){ renderHead(); renderTable(); renderMatches(); renderRules(); }
+
+function setScore(idx, side, val){
+  const r = state.results[idx] = state.results[idx]||{};
+  const n = val===""?null:Math.max(0,Math.min(99,parseInt(val,10)));
+  r[side] = Number.isNaN(n)?null:n;
+  r.err = "";
+  if(Number.isInteger(r.a) && Number.isInteger(r.b)){
+    if(r.a===r.b){ r.w=null; r.err="A match cannot end in a draw. Fix the score."; }
+    else r.w = r.a>r.b?"A":"B";
+  } else if(!Number.isInteger(r.a) && !Number.isInteger(r.b)) { r.w = null; }
+}
+
+document.addEventListener("click", e=>{
+  const t = e.target;
+  if(t.dataset.tab){
+    document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b===t));
+    document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===t.dataset.tab));
+    return;
+  }
+  if(t.dataset.tb!==undefined){
+    const i = t.dataset.tb; state.tb[i] = Math.max(0,(state.tb[i]||0)+ +t.dataset.d); save(); renderTable(); return;
+  }
+  const card = t.closest(".match"); if(!card) return;
+  const idx = +card.dataset.m;
+  if(t.dataset.w){
+    const r = state.results[idx] = state.results[idx]||{};
+    if(r.w===t.dataset.w){ r.w=null; }
+    else { r.w=t.dataset.w; r.err="";
+      if(Number.isInteger(r.a)&&Number.isInteger(r.b)&&((r.a>r.b)!==(r.w==="A")||r.a===r.b)){ r.a=null; r.b=null; } }
+    save(); renderAll();
+  }
+  if(t.dataset.clear){ delete state.results[idx]; save(); renderAll(); }
+});
+document.addEventListener("change", e=>{
+  const t = e.target;
+  if(t.id==="fp"){ filter.player=t.value; renderMatches(); return; }
+  if(t.id==="fs"){ filter.status=t.value; renderMatches(); return; }
+  if(t.dataset.s){
+    const idx = +t.closest(".match").dataset.m;
+    setScore(idx, t.dataset.s, t.value); save(); renderAll();
+  }
+});
+renderAll();
+</script>
+</body>
+</html>
