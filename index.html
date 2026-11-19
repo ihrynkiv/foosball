@@ -59,6 +59,7 @@ button,input,select{font:inherit;color:inherit}
 
 /* ---------- Header ---------- */
 header{
+  position:relative;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='160' viewBox='0 0 600 160'%3E%3Cg fill='none' stroke='white' stroke-opacity='.28' stroke-width='2'%3E%3Crect x='2' y='2' width='596' height='156' rx='12'/%3E%3Cpath d='M300 2v156'/%3E%3Ccircle cx='300' cy='80' r='36'/%3E%3Crect x='2' y='46' width='56' height='68'/%3E%3Crect x='542' y='46' width='56' height='68'/%3E%3C/g%3E%3C/svg%3E") center/auto 100% no-repeat,
     linear-gradient(135deg,var(--h1),var(--h2));
@@ -148,26 +149,29 @@ td.name,th.name{text-align:left;font-weight:800}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line)}
 .opt:first-of-type{border-top:0}
 
+#reset{position:absolute;top:10px;right:12px;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.35);color:var(--h-ink);font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;cursor:pointer}
+#reset:hover{background:rgba(255,255,255,.65)}
 #share{position:fixed;right:14px;bottom:14px;z-index:10;border:0;padding:10px 16px;border-radius:99px;font-weight:800;font-size:14px;background:var(--accent);color:var(--accent-ink);cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2)}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 30px}
 
 /* ---------- Laptop: two columns ---------- */
 @media(min-width:960px){
   main[data-tab="table"],main[data-tab="matches"]{display:grid;grid-template-columns:minmax(380px,5fr) 7fr;gap:0 24px;align-items:start}
-  main[data-tab="table"] #matches,main[data-tab="matches"] #table{display:block}
+  main[data-tab="matches"] #table{display:block}
   main[data-tab="table"] #table,main[data-tab="matches"] #table{position:sticky;top:70px}
-  #matches{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--gap);align-content:start}
+  main[data-tab="table"] #matches,main[data-tab="matches"] #matches{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--gap);align-content:start}
   #matches .filters{grid-column:1/-1}
   .only-wide{display:inline-block}.only-narrow{display:none}
   .match{margin:0 0 var(--gap)}
   #rules,#themes{max-width:760px;margin:0 auto}
 }
-@media(min-width:960px) and (max-width:1180px){ #matches{grid-template-columns:1fr} }
+@media(min-width:960px) and (max-width:1180px){ main #matches{grid-template-columns:1fr!important} }
 @media(max-width:420px){ .hide-s{display:none} .seg button{padding:8px 11px;font-size:14px} }
 </style>
 </head>
 <body>
 <header>
+  <button id="reset" onclick="resetAll()" title="Reset the whole championship">↺ Reset</button>
   <div class="logo"><span class="ball">⚽</span> Verity Foosball</div>
   <div class="sub">Office table football · 7 players · 21 matches · 2 vs 2</div>
   <div class="progress"><i id="bar" style="width:0"></i></div>
@@ -220,6 +224,10 @@ function load(){
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
   try{ history.replaceState(null,"",location.pathname+location.search+"#s="+encodeState()); }catch(e){}
+}
+function resetAll(){
+  if(!confirm("Reset the whole championship? All results and tie-break points will be deleted.")) return;
+  state={results:{},tb:{}}; save(); renderAll();
 }
 function shareUrl(){ return location.origin+location.pathname+"#s="+encodeState(); }
 function copyShare(){
@@ -393,7 +401,7 @@ function renderRules(){
     const f = e.target.files[0]; if(!f) return;
     f.text().then(t=>{ try{ const s=JSON.parse(t); if(!s.results) throw 0; state={results:s.results,tb:s.tb||{}}; save(); renderAll(); alert("Imported."); }catch(x){ alert("This file is not valid."); } });
   };
-  $("#rst").onclick = ()=>{ if(confirm("Delete all results?")){ state={results:{},tb:{}}; save(); renderAll(); } };
+  $("#rst").onclick = resetAll;
 }
 
 function renderThemes(){
