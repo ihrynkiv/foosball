@@ -125,6 +125,18 @@ const KEY = "verity-foosball-v1";
 const WIN_SCORE = 10;
 
 let state = load();
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+function encodeState(){ return btoa(unescape(encodeURIComponent(JSON.stringify({results:state.results,tb:state.tb})))); }
+function decodeState(t){ const s=JSON.parse(decodeURIComponent(escape(atob(t)))); if(!s||!s.results) throw 0; return {results:s.results,tb:s.tb||{}}; }
+(function fromLink(){
+  const m = location.hash.match(/^#s=(.+)$/); if(!m) return;
+  try{
+    const s = decodeState(m[1]);
+    const has = Object.keys(state.results).length>0;
+    if(!has || confirm("Load the results from this link? This replaces the results saved in this browser.")){ state=s; save(); }
+  }catch(e){}
+  history.replaceState(null,"",location.pathname+location.search);
+})();
 function load(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.results) return s; }catch(e){}
   return {results:{}, tb:{}};
@@ -269,14 +281,19 @@ function renderRules(){
     <p>Tip: If only the score of some matches is known, GD is not fully fair. In that case, play the Golden Goal round.</p>
   </div>
   <div class="card"><h2>💾 Data</h2>
-    <p>The site saves results in this browser only. Use one computer for the tournament. Use Export to save a backup.</p>
+    <p>The site saves results in this browser. They stay after a reload. Use "Copy share link" to keep or share the results. Open the link on any device to load them.</p>
     <div class="tools">
+      <button class="btn" id="lnk">Copy share link</button>
       <button class="btn" id="exp">Export results</button>
       <button class="btn" id="imp">Import results</button>
       <button class="btn danger" id="rst">Reset everything</button>
       <input type="file" id="file" accept="application/json" hidden>
     </div>
   </div>`;
+  $("#lnk").onclick = ()=>{
+    const u = location.origin+location.pathname+"#s="+encodeState();
+    (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>alert("Link copied. Open it on any device to see these results."),()=>prompt("Copy this link:",u));
+  };
   $("#exp").onclick = ()=>{
     const b = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
     const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "verity-foosball.json"; a.click();
