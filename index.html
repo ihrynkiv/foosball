@@ -268,14 +268,12 @@ function stats(){
       });
     });
   });
-  s.forEach(x=>{x.gd=x.gf-x.ga; x.tb=state.tb[x.i]||0;});
-  s.sort((a,b)=> b.pts-a.pts || b.gd-a.gd || b.gf-a.gf || b.tb-a.tb || a.i-b.i);
+  s.forEach(x=>{x.gd=x.gf-x.ga;});
+  s.sort((a,b)=> b.pts-a.pts || b.gd-a.gd || a.i-b.i);
   s.forEach((x,k)=>{
     const prev = s[k-1];
-    x.same = prev && prev.pts===x.pts && prev.gd===x.gd && prev.gf===x.gf && prev.tb===x.tb;
-    x.pos = x.same ? prev.pos : k+1;
+    x.pos = prev && prev.pts===x.pts && prev.gd===x.gd ? prev.pos : k+1;
   });
-  s.forEach(x=>{ x.tied = s.some(y=>y!==x && y.pos===x.pos); });
   return s;
 }
 
@@ -298,26 +296,19 @@ function renderTable(){
       return '<div class="pod p'+(rank+1)+'"><span class="medal">'+med[rank]+'</span><div class="nm">'+x.n+'</div><div class="pt">'+x.pts+' pts</div></div>';
     }).join("")+'</div>';
   }
-  const tiedTop = s.filter(x=>x.pos<=3 && x.tied);
-  if(done && tiedTop.length){
-    const groups = {};
-    tiedTop.forEach(x=>(groups[x.pos]=groups[x.pos]||[]).push(x.n));
-    h += '<div class="alert">🥅 Still a tie after all tie-break rules! Level for place '+
-      Object.entries(groups).map(([p,n])=>p+": "+n.join(", ")).join(" · ")+
-      '. Play the Golden Goal (see Rules). Then press + to add a Golden Goal win.</div>';
-  } else if(done){
-    h += '<div class="alert">🎉 The championship is over. Congratulations, '+s[0].n+'!</div>';
+  if(done){
+    const champs = s.filter(x=>x.pos===1).map(x=>x.n);
+    h += '<div class="alert">🎉 The championship is over. '+(champs.length>1?'Shared victory for ':'Congratulations, ')+champs.join(" & ")+'!</div>';
   }
-  h += '<div class="card scroll"><table><thead><tr><th>#</th><th class="name">Player</th><th>Pts</th><th>P</th><th class="hide-s">W</th><th class="hide-s">GF</th><th class="hide-s">GA</th><th>GD</th><th>🥅</th></tr></thead><tbody>';
+  h += '<div class="card scroll"><table><thead><tr><th>#</th><th class="name">Player</th><th>Pts</th><th>P</th><th class="hide-s">W</th><th class="hide-s">GF</th><th class="hide-s">GA</th><th>GD</th></tr></thead><tbody>';
   s.forEach(x=>{
-    h += '<tr><td class="pos">'+(x.pos<=3&&started?med[x.pos-1]:x.pos)+'</td><td class="name">'+x.n+(x.tied&&started?' <span class="pill">TIE</span>':'')+
+    h += '<tr><td class="pos">'+(x.pos<=3&&started?med[x.pos-1]:x.pos)+'</td><td class="name">'+x.n+
       '<div class="meter"><i style="width:'+Math.round(x.pts/12*100)+'%"></i></div></td>'+
       '<td class="pts"><span>'+x.pts+'</span></td><td>'+x.played+'</td><td class="hide-s">'+x.wins+'</td><td class="hide-s">'+x.gf+
-      '</td><td class="hide-s">'+x.ga+'</td><td>'+(x.gd>0?"+":"")+x.gd+'</td><td class="tb">'+
-      (x.tied && started ? '<button data-tb="'+x.i+'" data-d="-1">−</button> '+x.tb+' <button data-tb="'+x.i+'" data-d="1">+</button>' : (x.tb||"")) +'</td></tr>';
+      '</td><td class="hide-s">'+x.ga+'</td><td>'+(x.gd>0?"+":"")+x.gd+'</td></tr>';
   });
   h += '</tbody></table></div>';
-  h += '<p class="note">Order: points → goal difference (GD) → goals scored (GF) → Golden Goal wins (🥅). Goals count only for matches with a score.</p>';
+  h += '<p class="note">Order: points first. If points are equal, the better goal difference (GD) is higher. If GD is also equal, the players share the place. Goals count only for matches with a score.</p>';
   $("#table").innerHTML = h;
 }
 
@@ -365,23 +356,13 @@ function renderRules(){
     <li>Teams swap sides at 5 goals. Use a coin toss for the first sides.</li>
     <li>No spinning the rods. Keep it fun.</li>
   </ul></div>
-  <div class="card"><h2>🥇 Tie-breaks</h2>
-    <p>Two players can have the same points at the end. The site uses these rules in this order:</p>
+  <div class="card"><h2>🥇 Ranking</h2>
     <ol>
       <li><b>Points</b> (wins).</li>
-      <li><b>Goal difference (GD)</b>: all goals the player scored minus all goals the player conceded.</li>
-      <li><b>Goals scored (GF)</b>.</li>
-      <li><b>Golden Goal round</b>, if players are still level.</li>
+      <li><b>Goal difference (GD)</b>: all goals the player scored minus all goals the player conceded. The better GD is higher.</li>
+      <li>If points and GD are equal, the players share the place.</li>
     </ol>
-    <h3>Golden Goal round</h3>
-    <ul>
-      <li>Only players that are level for a podium place play.</li>
-      <li><b>2 players:</b> a 1 vs 1 match. The first goal wins.</li>
-      <li><b>3 players:</b> a 1 vs 1 knockout. A coin toss gives one player a bye.</li>
-      <li><b>4 players:</b> a 2 vs 2 match. The best-ranked and the worst-ranked player (1 &amp; 4) play against the 2 &amp; 3 pair.</li>
-      <li>Add a Golden Goal win with the + button in the Table tab.</li>
-    </ul>
-    <p class="note">If only some matches have a score, GD is not fully fair. In that case, play the Golden Goal round.</p>
+    <p class="note">GD counts only matches with a score. Enter the score after each match to keep GD fair.</p>
   </div>
   <div class="card"><h2>💾 Data</h2>
     <p>The site saves results in this browser and in the page URL. Use the Share button to send the results to another device.</p>
@@ -446,9 +427,6 @@ document.addEventListener("click", e=>{
     if(t.dataset.pref==="reset"){ prefs={}; try{localStorage.removeItem(PREF_KEY);}catch(x){} applyPrefs(); renderThemes(); }
     else setPref(t.dataset.pref, t.dataset.v);
     return;
-  }
-  if(t.dataset.tb!==undefined){
-    const i = t.dataset.tb; state.tb[i] = Math.max(0,(state.tb[i]||0)+ +t.dataset.d); save(); renderTable(); return;
   }
   const card = t.closest(".match"); if(!card) return;
   const idx = +card.dataset.m;
