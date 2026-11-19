@@ -88,6 +88,7 @@ td.pts{font-size:20px;font-weight:900;color:var(--grass)}
 .rules h3{margin:14px 0 6px}
 .rules li{margin:4px 0}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#share{position:fixed;right:12px;bottom:12px;z-index:10;font:inherit;font-size:13px;font-weight:800;padding:7px 12px;border-radius:99px;border:2px solid var(--wood-d);background:var(--gold);color:#3b2a00;cursor:pointer;box-shadow:0 3px 0 var(--wood-d)}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:20px}
 @media(max-width:560px){
   .teams,.ctrl{grid-template-columns:1fr}
@@ -113,7 +114,8 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:20px}
   <section id="matches"></section>
   <section id="rules" class="rules"></section>
 </main>
-<footer>Kick off, have fun, play fair. ⚽ Results save in this browser.</footer>
+<button id="share" onclick="copyShare()" title="Copy a link with all results">🔗 Share</button>
+<footer>Kick off, have fun, play fair. ⚽ Results save in this browser and in the page URL.</footer>
 
 <script>
 const PLAYERS = ["Ivan","Yulia","Tania","Oleksii","Vova","Viktor","Halyna"];
@@ -133,15 +135,25 @@ function decodeState(t){ const s=JSON.parse(decodeURIComponent(escape(atob(t))))
   try{
     const s = decodeState(m[1]);
     const has = Object.keys(state.results).length>0;
-    if(!has || confirm("Load the results from this link? This replaces the results saved in this browser.")){ state=s; save(); }
+    const same = encodeState()===m[1];
+    if(!same && (!has || confirm("Load the results from this link? This replaces the results saved in this browser."))){ state=s; }
   }catch(e){}
-  history.replaceState(null,"",location.pathname+location.search);
+  save();
 })();
 function load(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.results) return s; }catch(e){}
   return {results:{}, tb:{}};
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  try{ history.replaceState(null,"",location.pathname+location.search+"#s="+encodeState()); }catch(e){}
+}
+function shareUrl(){ return location.origin+location.pathname+"#s="+encodeState(); }
+function copyShare(){
+  const u = shareUrl();
+  const done = ()=>{ const b=document.getElementById("share"); b.textContent="✅ Copied!"; setTimeout(()=>b.textContent="🔗 Share",1500); };
+  (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(done,()=>prompt("Copy this link:",u));
+}
 
 const $ = s => document.querySelector(s);
 const names = ids => ids.map(i => PLAYERS[i]).join(" & ");
